@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ============================================================
+         Hify — 轻量级 AI Agent 平台
+         父 POM：统一管理版本号 + 子模块声明
+         ============================================================ -->
+
+    <groupId>com.hify</groupId>
+    <artifactId>hify</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Hify</name>
+    <description>轻量级 AI Agent 平台 — Workflow 编排 + Agent Runtime + 知识库 + 多模型管理</description>
+
+    <!-- ================================================================
+         Spring Boot 作为祖父 POM（统一插件版本 + 基础依赖版本）
+         ================================================================ -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.1</version>
+        <relativePath/>
+    </parent>
+
+    <!-- ================================================================
+         子模块（编译顺序即依赖方向：common → model/tool → knowledge → agent → workflow → chat → app）
+         ================================================================ -->
+    <modules>
+        <module>hify-common</module>
+        <module>hify-model</module>
+        <module>hify-tool</module>
+        <module>hify-knowledge</module>
+        <module>hify-agent</module>
+        <module>hify-workflow</module>
+        <module>hify-chat</module>
+        <module>hify-app</module>
+    </modules>
+
+    <!-- ================================================================
+         统一版本号（Spring Boot 3.4.1 已管理大部分，此处仅覆盖或新增）
+         ================================================================ -->
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- 框架版本 -->
+        <spring-ai.version>1.0.0-M6</spring-ai.version>
+        <mybatis-plus.version>3.5.5</mybatis-plus.version>
+        <resilience4j.version>2.2.0</resilience4j.version>
+
+        <!-- 数据库驱动 -->
+        <mysql-connector.version>8.0.33</mysql-connector.version>
+        <postgresql.version>42.7.4</postgresql.version>
+    </properties>
+
+    <!-- ================================================================
+         仓库：Spring AI Milestones（GA 发布后移除）
+         ================================================================ -->
+    <repositories>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+    </repositories>
+
+    <!-- ================================================================
+         dependencyManagement：统一管理所有依赖版本，子模块引用时无需写 version
+         ================================================================ -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring AI BOM（LLM 调用 + Embedding + MCP Client + PGVector Store） -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- MyBatis-Plus（Spring Boot 3 专用 starter） -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+
+            <!-- MySQL JDBC Driver -->
+            <dependency>
+                <groupId>com.mysql</groupId>
+                <artifactId>mysql-connector-j</artifactId>
+                <version>${mysql-connector.version}</version>
+            </dependency>
+
+            <!-- PostgreSQL JDBC Driver（pgvector 向量库） -->
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
+            </dependency>
+
+            <!-- Resilience4j（熔断 + 重试 + 舱壁 + 限流） -->
+            <dependency>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-spring-boot3</artifactId>
+                <version>${resilience4j.version}</version>
+            </dependency>
+
+            <!-- ==================== 内部模块 ==================== -->
+
+            <dependency>
+                <groupId>com.hify</groupId>
+                <artifactId>hify-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hify</groupId>
+                <artifactId>hify-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hify</groupId>
+                <artifactId>hify-tool</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hify</groupId>
+                <artifactId>hify-knowledge</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hify</groupId>
+                <artifactId>hify-agent</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hify</groupId>
+                <artifactId>hify-workflow</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hify</groupId>
+                <artifactId>hify-chat</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- ================================================================
+         全局公共依赖（所有模块共享，无需重复声明）
+         ================================================================ -->
+    <dependencies>
+        <!-- Lombok：全局可用 -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- 测试 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- ================================================================
+         全局插件管理
+         ================================================================ -->
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- Spring Boot Maven Plugin：仅 hify-app 使用 repackage -->
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <excludes>
+                            <exclude>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                            </exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+</project>

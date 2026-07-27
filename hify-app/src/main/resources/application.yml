@@ -1,0 +1,66 @@
+# ============================================================
+# Hify Application Configuration
+# ============================================================
+
+spring:
+  application:
+    name: hify
+
+  # --- 数据源 ---
+  datasource:
+    # MySQL 业务数据库
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/hify?useUnicode=true&characterEncoding=utf8mb4&serverTimezone=UTC}
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:hify123}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # --- Redis ---
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  # --- pgvector（通过 Spring AI 自动配置） ---
+  ai:
+    vectorstore:
+      pgvector:
+        host: ${PGVECTOR_HOST:localhost}
+        port: ${PGVECTOR_PORT:5432}
+        database: ${PGVECTOR_DB:hify_vectors}
+        username: ${PGVECTOR_USER:postgres}
+        password: ${PGVECTOR_PASSWORD:postgres}
+
+# --- MyBatis-Plus ---
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.hify
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      # 逻辑删除：Entity 字段加 @TableLogic 即可生效
+      # deleted = 0 → 未删除，deleted = 1 → 已删除
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# --- 服务端口 ---
+server:
+  port: ${SERVER_PORT:8080}
+
+# --- Actuator ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# --- 日志 ---
+logging:
+  level:
+    com.hify: DEBUG
+    org.springframework.ai: INFO
