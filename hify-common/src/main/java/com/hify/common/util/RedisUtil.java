@@ -1,6 +1,7 @@
 package com.hify.common.util;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -18,8 +19,11 @@ import java.util.concurrent.TimeUnit;
  * redisUtil.set("session:123", dto, 30, TimeUnit.MINUTES);
  * SessionDto dto = redisUtil.get("session:123", SessionDto.class);
  * }</pre>
+ * <p>
+ * <b>开关控制</b>：通过 {@code hify.redis.enabled} 属性控制，默认开启。
  */
 @Component
+@ConditionalOnProperty(name = "hify.redis.enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 public class RedisUtil {
 

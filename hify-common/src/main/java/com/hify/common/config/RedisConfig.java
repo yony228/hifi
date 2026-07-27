@@ -1,5 +1,6 @@
 package com.hify.common.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -24,11 +25,15 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  * SessionDto dto = (SessionDto) redisTemplate.opsForValue().get("session:123");
  * }</pre>
  * 建议通过 {@link com.hify.common.util.RedisUtil} 包装类操作，提供类型安全和过期时间便利方法。
+ * <p>
+ * <b>开关控制</b>：通过 {@code hify.redis.enabled} 属性控制，默认开启。
+ * dev profile 设为 {@code false} 时，此 Bean 自动跳过。
  */
 @Configuration
 public class RedisConfig {
 
     @Bean
+    @ConditionalOnProperty(name = "hify.redis.enabled", havingValue = "true", matchIfMissing = true)
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);

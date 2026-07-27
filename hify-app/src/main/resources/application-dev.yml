@@ -1,0 +1,48 @@
+# ============================================================
+# Hify Dev Profile — 本地开发环境，无需外部基础设施
+# 激活方式：--spring.profiles.active=dev
+# ============================================================
+
+spring:
+  # --- 排除不可用的自动装配 ---
+  autoconfigure:
+    exclude:
+      # Spring AI：无 API Key
+      - org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
+      # pgvector：无 PostgreSQL 实例
+      - org.springframework.ai.autoconfigure.vectorstore.pgvector.PgVectorStoreAutoConfiguration
+      # Redis：无 Redis 实例
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
+  # --- H2 内存数据库（替代 MySQL） ---
+  datasource:
+    url: jdbc:h2:mem:hify_dev;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # --- SQL 初始化（建表脚本，文件不存在时跳过） ---
+  sql:
+    init:
+      mode: never
+
+# --- Hify 功能开关 ---
+hify:
+  redis:
+    enabled: false
+
+# --- MyBatis-Plus（dev 环境打印 SQL） ---
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# --- 日志 ---
+logging:
+  level:
+    com.hify: DEBUG
+    org.springframework.ai: DEBUG
+    org.springframework.boot.autoconfigure: INFO
