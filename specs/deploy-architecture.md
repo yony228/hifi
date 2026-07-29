@@ -452,3 +452,113 @@ K8s liveness/readiness probe (每 5-10s 探测)
 □ 资源 limits 不低于预算表
 □ 滚动更新：kill 一个 hify-app Pod 后用户请求不受影响
 ```
+
+---
+
+## 七、环境信息
+
+### 7.1 环境总览
+
+| 环境 | 用途 | 部署方式 | Spring Profile |
+|---|---|---|---|
+| **Dev** | 本地开发、快速验证 | IDE / `mvn spring-boot:run` | `dev` |
+| **Test** | 功能测试、集成测试 | 待定 | `test` |
+| **Staging** | 预发布验证 | 待定 | `staging` |
+| **Production** | 正式环境 | K8s（见 §一～五） | `default` |
+
+### 7.2 Dev（本地开发）
+
+**目标：** 零外部依赖即可启动，验证 Bean 装配、模块依赖、组件扫描。
+
+**启动方式：**
+```bash
+mvn spring-boot:run -pl hify-app -Dspring-boot.run.profiles=dev
+# 或 IDE 中设置 VM options: -Dspring.profiles.active=dev
+```
+
+| 组件 | 策略 | 说明 |
+|---|---|---|
+| **MySQL** | H2 内存库 | `jdbc:h2:mem:hify_dev;MODE=MYSQL`，数据不持久化 |
+| **Redis** | 跳过 | `hify.redis.enabled=false`，`RedisConfig` / `RedisUtil` 不装配 |
+| **pgvector** | 排除自动装配 | `PgVectorStoreAutoConfiguration` 排除 |
+| **LLM API** | 排除自动装配 | `OpenAiAutoConfiguration` 排除，无 API Key |
+| **端口** | `8080` | |
+| **H2 Console** | `http://localhost:8080/h2-console` | |
+| **Actuator** | `http://localhost:8080/actuator/health` | |
+| **日志级别** | `com.hify: DEBUG` | |
+
+**需要 Redis 时：** 注释 `application-dev.yml` 中的 `hify.redis.enabled`（或改为 `true`），并启动本地 `redis-server`。
+
+**需要 LLM 时：** 注释 `spring.autoconfigure.exclude` 中的 `OpenAiAutoConfiguration`，并设置环境变量 `OPENAI_API_KEY`。
+
+**配置文件：** `hify-app/src/main/resources/application-dev.yml`
+
+---
+
+### 7.3 Test（测试环境）
+
+| 组件 | 策略 | 说明 |
+|---|---|---|
+| **MySQL** | 待定 | |
+| **Redis** | 待定 | |
+| **pgvector** | 待定 | |
+| **LLM API** | 待定 | |
+| **端口** | 待定 | |
+| **部署方式** | 待定 | |
+
+**配置文件：** `application-test.yml`（待创建）
+
+---
+
+### 7.4 Staging（预发布环境）
+
+| 组件 | 策略 | 说明 |
+|---|---|---|
+| **MySQL** | 待定 | |
+| **Redis** | 待定 | |
+| **pgvector** | 待定 | |
+| **LLM API** | 待定 | |
+| **端口** | 待定 | |
+| **部署方式** | 待定 | |
+| **副本数** | 待定 | |
+
+**配置文件：** `application-staging.yml`（待创建）
+
+---
+
+### 7.5 Production（生产环境）
+
+**部署方式：** K8s（详见 §一～五）。
+
+| 组件 | 策略 | 说明 |
+|---|---|---|
+| **MySQL** | StatefulSet × 1 | `mysql:8.4`，10Gi PVC，见 §3.4 |
+| **Redis** | Deployment × 1 | `redis:7-alpine`，256MB 上限，allkeys-lru，不持久化，见 §3.5 |
+| **pgvector** | StatefulSet × 1 | `pgvector/pgvector:pg17`，20Gi PVC，见 §3.6 |
+| **LLM API** | 外部 API | OpenAI-compatible 接口，API Key 存 K8s Secret |
+| **hify-app** | Deployment × 2 | `eclipse-temurin:21-jre-alpine`，JVM 512m，见 §3.3 |
+| **hifi-web** | Deployment × 1 | `nginx:1.27-alpine`，serve Vue 静态文件，见 §3.2 |
+| **端口** | `8080`（app），`80`（web） | |
+| **副本数** | app × 2（滚动更新不中断），web × 1 | |
+| **资源总预算** | 6 pods / 3.2 CPU / 3.3Gi 内存 / 30Gi 存储 | 见 §4.1 |
+| **TLS** | cert-manager + Let's Encrypt | 自动签发续签 |
+| **域名** | 待定 | |
+| **配置文件** | `application.yml`（default profile） | |
+
+**环境变量（K8s ConfigMap / Secret）：**
+
+| 变量 | 来源 | 示例值 |
+|---|---|---|
+| `MYSQL_URL` | ConfigMap | `jdbc:mysql://mysql-service:3306/hify?...` |
+| `MYSQL_USER` | ConfigMap | `hify` |
+| `MYSQL_PASSWORD` | Secret | `***` |
+| `REDIS_HOST` | ConfigMap | `redis-service` |
+| `REDIS_PORT` | ConfigMap | `6379` |
+| `PGVECTOR_HOST` | ConfigMap | `pgvector-service` |
+| `PGVECTOR_PORT` | ConfigMap | `5432` |
+| `PGVECTOR_DB` | ConfigMap | `hify_vectors` |
+| `PGVECTOR_USER` | ConfigMap | `postgres` |
+| `PGVECTOR_PASSWORD` | Secret | `***` |
+| `OPENAI_API_KEY` | Secret | `***` |
+| `JWT_SECRET` | Secret | `***` |
+| `SERVER_PORT` | ConfigMap | `8080` |
