@@ -57,7 +57,7 @@
 
 | 场景 | 参数名 | 示例 |
 |---|---|---|
-| 游标分页 | `cursor`, `size` | `?cursor=xxx&size=20` |
+| 传统分页 | `page`, `pageSize` | `?page=1&pageSize=20` |
 | 关键词搜索 | `keyword` | `?keyword=test` |
 | 状态筛选 | `status` | `?status=1` |
 | 时间范围 | `startTime`, `endTime` | `?startTime=2026-01-01&endTime=2026-07-01` |
@@ -92,20 +92,19 @@
 }
 ```
 
-**列表数据：**
+**列表数据（分页）：**
 
 ```json
 {
   "code": 0,
   "message": "ok",
-  "data": {
-    "items": [
-      { "id": 1, "name": "客服 Agent" },
-      { "id": 2, "name": "翻译 Agent" }
-    ],
-    "hasMore": true,
-    "nextCursor": "2026-07-20T10:00:00_1"
-  }
+  "data": [
+    { "id": 1, "name": "客服 Agent" },
+    { "id": 2, "name": "翻译 Agent" }
+  ],
+  "total": 100,
+  "page": 1,
+  "size": 20
 }
 ```
 
@@ -179,98 +178,82 @@ public class AgentController {
 
 ## 3. 分页规范
 
-### 3.1 统一游标分页
+### 3.1 统一传统分页
 
-不使用 `LIMIT-offset`，全部接口走游标分页。
+项目前期数据量小（最大的表年增长 ~10 万行），传统 `page`/`pageSize` 分页
+足以覆盖所有场景，且 MyBatis-Plus 的 `PaginationInnerInterceptor` 开箱即用，
+Element Plus 的 `el-pagination` 组件原生适配。
+
+后期如果个别接口（如对话消息）出现深页性能问题，再针对性改为游标分页，不影响其他接口。
 
 **请求参数：**
 
 | 参数 | 类型 | 说明 |
 |---|---|---|
-| `cursor` | String | 上一页返回的 `nextCursor`，首页不传 |
-| `size` | Integer | 每页条数，默认 20，最大 100 |
+| `page` | Integer | 页码，从 1 开始，默认 1 |
+| `pageSize` | Integer | 每页条数，默认 20，最大 100 |
 
-**响应结构：**
+**响应结构（`PageResult<T>`）：**
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `data.items` | Array | 当前页数据 |
-| `data.hasMore` | Boolean | 是否还有下一页 |
-| `data.nextCursor` | String | 下一页游标，传给下次请求的 `cursor` 参数；`hasMore=false` 时为 `null` |
+| `data` | Array\<T\> | 当前页数据列表 |
+| `total` | Long | 总记录数 |
+| `page` | Integer | 当前页码 |
+| `size` | Integer | 每页条数 |
 
-### 3.2 游标编码
+### 3.2 Java 实现
 
-游标由 `createdAt + id` 组成，Base64 编码：
+使用 MyBatis-Plus 的 `Page<T>` 配合 `PaginationInnerInterceptor`，Service 层通过
+`PageUtils.toPageResult()` 转换为 `PageResult<T>`。
 
 ```java
-// 生成游标
-String cursor = Base64.getEncoder()
-    .encodeToString((item.getCreatedAt() + "_" + item.getId()).getBytes());
+// Controller
+@GetMapping("/agents")
+public PageResult<AgentResponse> list(
+        @RequestParam(defaultValue = "1") Integer page,
+        @RequestParam(defaultValue = "20") Integer pageSize) {
+    return agentService.listAgents(page, pageSize);
+}
 
-// 解析游标
-String decoded = new String(Base64.getDecoder().decode(cursor));
-String[] parts = decoded.split("_");
-LocalDateTime cursorTime = LocalDateTime.parse(parts[0]);
-Long cursorId = Long.parseLong(parts[1]);
+// Service
+public PageResult<AgentResponse> listAgents(int page, int pageSize) {
+    Page<Agent> mpPage = new Page<>(page, pageSize);
+    agentMapper.selectPage(mpPage, new LambdaQueryWrapper<Agent>().eq(Agent::getStatus, 1));
+    List<AgentResponse> items = mpPage.getRecords().stream()
+            .map(AgentResponse::from).toList();
+    return PageUtils.toPageResult(items, mpPage);
+}
 ```
 
-### 3.3 SQL 模板
+### 3.3 分页响应示例
 
-```sql
--- 第一页
-SELECT {columns} FROM {table}
-WHERE {filter_conditions}
-ORDER BY created_at DESC, id DESC
-LIMIT #{size + 1};  -- 多取 1 条判断 hasMore
-
--- 后续页
-SELECT {columns} FROM {table}
-WHERE {filter_conditions}
-  AND (created_at < #{cursorTime} OR (created_at = #{cursorTime} AND id < #{cursorId}))
-ORDER BY created_at DESC, id DESC
-LIMIT #{size + 1};
-```
-
-### 3.4 分页响应示例
-
-**首页请求：** `GET /api/v1/agent/agents?size=20`
+**请求：** `GET /api/v1/agent/agents?page=1&pageSize=20`
 
 ```json
 {
   "code": 0,
   "message": "ok",
-  "data": {
-    "items": [ ... ],
-    "hasMore": true,
-    "nextCursor": "MjAyNi0wNy0yMFQxMDowMDowMF8x"
-  }
+  "data": [
+    { "id": 1, "name": "客服 Agent" },
+    { "id": 2, "name": "翻译 Agent" }
+  ],
+  "total": 42,
+  "page": 1,
+  "size": 20
 }
 ```
 
-**次页请求：** `GET /api/v1/agent/agents?size=20&cursor=MjAyNi0wNy0yMFQxMDowMDowMF8x`
-
-```json
-{
-  "code": 0,
-  "message": "ok",
-  "data": {
-    "items": [ ... ],
-    "hasMore": false,
-    "nextCursor": null
-  }
-}
-```
-
-### 3.5 分页强制规则
+### 3.4 分页强制规则
 
 | 编号 | 规则 |
 |---|---|
 | PG-01 | 所有列表接口必须分页，不提供"全量查询"端点 |
-| PG-02 | 不使用 `page`/`pageSize` 参数，统一用 `cursor`/`size` |
-| PG-03 | 取 N+1 条判断 `hasMore`，不执行 COUNT 查询 |
-| PG-04 | 列表接口不返回 `total`/`totalPages`，只返回 `hasMore` + `nextCursor` |
-| PG-05 | `size` 上限 100，超过的请求返回 400 错误 |
-| PG-06 | 接口文档必须标注"支持游标分页" |
+| PG-02 | 统一使用 `page`/`pageSize` 参数，camelCase 命名 |
+| PG-03 | `pageSize` 上限 100，超过的请求在拦截器中抛异常 |
+| PG-04 | 列表接口返回 `total`，前端据此显示总页数和跳页 |
+| PG-05 | 列表 SQL 禁止 `SELECT *`，只查展示所需字段（详情接口再全量查） |
+| PG-06 | Service 层统一用 `PageUtils.toPageResult()` 做 `Page<T>` → `PageResult<T>` 转换 |
 
 ---
 

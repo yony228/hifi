@@ -1,5 +1,6 @@
 package com.hify.common.dto;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -44,7 +45,7 @@ public class PageResult<T> extends Result<List<T>> {
     private int size;
 
     /**
-     * 创建分页成功响应。
+     * 创建分页成功响应（手动指定所有参数）。
      *
      * @param items 当前页数据
      * @param total 总记录数
@@ -61,5 +62,25 @@ public class PageResult<T> extends Result<List<T>> {
         result.setPage(page);
         result.setSize(size);
         return result;
+    }
+
+    /**
+     * 从 MyBatis-Plus {@link Page} 对象创建分页成功响应。
+     * <p>
+     * 从 {@code mpPage} 中自动提取 {@code total}/{@code current}/{@code size}，
+     * 传入已转换为 DTO 的 {@code items} 列表作为 {@code data}。
+     *
+     * <pre>{@code
+     * Page<Agent> mpPage = agentMapper.selectPage(new Page<>(1, 20), wrapper);
+     * List<AgentResponse> items = mpPage.getRecords().stream().map(AgentResponse::from).toList();
+     * return PageResult.from(items, mpPage);
+     * }</pre>
+     *
+     * @param items  当前页数据（已转换为 DTO 的列表）
+     * @param mpPage MyBatis-Plus 分页结果
+     * @param <T>    列表元素类型
+     */
+    public static <T> PageResult<T> from(List<T> items, Page<?> mpPage) {
+        return of(items, mpPage.getTotal(), (int) mpPage.getCurrent(), (int) mpPage.getSize());
     }
 }

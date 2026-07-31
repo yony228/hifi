@@ -406,42 +406,27 @@ CREATE INDEX idx_message_session_id ON message(session_id);
 
 ### 3.3 分页查询注意事项
 
-#### 3.3.1 禁用 LIMIT-offset 大偏移
+#### 3.3.1 统一使用传统分页
 
-```sql
--- 错误：offset 越大越慢，MySQL 需要扫描前 N 行再丢弃
-SELECT * FROM log WHERE user_id = ? ORDER BY created_at DESC LIMIT 100 OFFSET 10000;
+项目前期数据量小（最大表年增长 ~10 万行），统一使用 `page`/`pageSize` 传统分页。
+MyBatis-Plus `PaginationInnerInterceptor` 已配置（`maxLimit=100`），Service 层通过
+`PageUtils.toPageResult()` 将 `Page<T>` 转为 `PageResult<T>`。
 
--- 正确：游标分页
-SELECT * FROM log WHERE user_id = ? AND created_at < ? ORDER BY created_at DESC LIMIT 100;
+```java
+Page<Agent> mpPage = new Page<>(page, pageSize);
+agentMapper.selectPage(mpPage, wrapper);
+PageResult<AgentResponse> result = PageUtils.toPageResult(items, mpPage);
 ```
 
-#### 3.3.2 统一游标分页
+#### 3.3.2 深页优化（后期按需）
 
-- 列表接口一律使用游标分页（基于 `created_at` + `id`）
-- 前端传上一页最后一条的 `created_at` + `id` 作为游标
-- 后端返回 `has_more` 标志位，前端判断是否还有下一页
-- 不做「总页数」「跳转到第 N 页」这类需要 COUNT 的操作
+当单表行数超过百万且出现深页查询慢时，再对特定接口做以下优化：
 
-#### 3.3.3 游标分页实现模板
+1. **覆盖索引**：排序字段 + 筛选字段建联合索引，避免回表
+2. **延迟关联**：先在覆盖索引上做 OFFSET+LIMIT 拿到主键列表，再 JOIN 回主表取完整行
+3. **游标分页**：对无限滚动场景（如消息列表），改用 `(created_at, id)` 联合游标，替代 OFFSET
 
-```sql
--- 第一页
-SELECT * FROM log WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT 21;
-
--- 后续页（lastCreatedAt, lastId 来自上一页最后一条）
-SELECT * FROM log
-WHERE user_id = ?
-  AND (created_at < ? OR (created_at = ? AND id < ?))
-ORDER BY created_at DESC, id DESC
-LIMIT 21;  -- 取 N+1 条判断 has_more
-```
-
-#### 3.3.4 列表字段剪裁
-
-- 列表接口只查展示所需字段，禁忌 `SELECT *`
-- `log` 列表不查 `user_input`、`model_output`、`tool_calls` 三个 TEXT/JSON 大字段
-- 详情接口再全量查询
+阶段 0 无需实施以上优化，MYISAM/InnoDB 在百万行以下时 OFFSET 的额外回表开销在可接受范围内。
 
 ---
 

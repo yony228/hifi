@@ -28,16 +28,18 @@
   - `code` / `message` / `data` 字段始终保留（即使为 null）
 - **优先级：** 🔴 最高 — 所有 API 的 JSON 输出依赖此配置
 
-### 3. 游标分页通用工具（`CursorUtil` + `CursorPageHelper`）
+### 3. 传统分页工具（`PageUtils`）
 
-- **解决什么问题：** api-spec 要求游标分页（`cursor` / `size`），cursor 是 Base64 编码的 `createdAt_id`，MybatisPlusConfig 已配的是传统页码分页，但业务接口要求游标分页。
-- **实现位置：** `hify-common: com.hify.common.util.CursorUtil` + `CursorPageHelper`
+- **解决什么问题：** MyBatis-Plus `Page<T>` 的 `total`/`current`/`size` 字段与项目 `PageResult<T>` 对应，但需要统一的转换入口，避免各 Service 各自写 setter 赋值。同时 `PageResult.from()` 作为静态工厂确保分页响应结构一致。
+- **实现位置：** `hify-common: com.hify.common.util.PageUtils`
 - **要点：**
-  - `CursorUtil.encode(Instant, Long) → String` 和 `decode(String) → Cursor`
-  - 通用查询模板：`WHERE (created_at, id) < (?, ?) ORDER BY created_at DESC, id DESC LIMIT ?`
-  - `CursorPageHelper` 封装 MyBatis Mapper 调用，返回 `PageResult<T>`（含 `hasMore` / `nextCursor`）
-  - 被 6 个业务模块共用
+  - `PageUtils.toPageResult(List<T> items, Page<?> mpPage) → PageResult<T>`
+  - 从 MyBatis-Plus `Page` 自动提取 `total`/`current`/`size`
+  - `PageResult` 已有 `total`/`page`/`size` 字段，无需改动结构
+  - 被所有业务模块的列表查询共用
+  - 项目前期用传统分页（`page`/`pageSize`），后期个别接口（如消息列表）若出现深页性能问题再单独改为游标
 - **优先级：** 🟡 高 — 列表查询接口通用依赖
+- **已完成：** ✅
 
 ---
 
@@ -213,7 +215,7 @@
 | 🔴 最高 | 4. WebMvcConfig | hify-common |
 | 🔴 最高 | 8. LlmThreadPoolConfig | hify-model |
 | 🔴 最高 | 9. HttpClientConfig | hify-model |
-| 🟡 高 | 3. CursorUtil + CursorPageHelper | hify-common |
+| 🟡 高 | 3. PageUtils | hify-common |
 | 🟡 高 | 5. JsonUtil | hify-common |
 | 🟡 高 | 6. SseUtil | hify-common |
 | 🟡 高 | 7. Constants | hify-common |
