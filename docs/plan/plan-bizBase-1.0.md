@@ -16,6 +16,7 @@
   - H2 兼容版本（pgvector 相关部分用标准字段替代）
   - MySQL 用 `spring.sql.init.mode=always` 在首次启动时自动执行
 - **优先级：** 🔴 最高 — 硬前置依赖
+- **已完成：** ✅
 
 ### 2. Jackson 序列化配置（`JacksonConfig`）
 
@@ -27,6 +28,7 @@
   - 日期格式统一为 `yyyy-MM-dd HH:mm:ss`
   - `code` / `message` / `data` 字段始终保留（即使为 null）
 - **优先级：** 🔴 最高 — 所有 API 的 JSON 输出依赖此配置
+- **已完成：** ✅
 
 ### 3. 传统分页工具（`PageUtils`）
 
@@ -55,6 +57,7 @@
   - `fromJsonList(String, Class<T>) → List<T>`
   - 内部复用 Spring 容器的 `ObjectMapper`（确保全局配置一致）
 - **优先级：** 🟡 高 — 几乎所有模块都需要的工具
+- **已完成：** ✅
 
 ### 5. SSE 推送工具（`SseUtil`）
 
