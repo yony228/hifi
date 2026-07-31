@@ -45,18 +45,7 @@
 
 ## 二、接口层
 
-### 4. WebMvc 配置（`WebMvcConfig`）
-
-- **解决什么问题：** 前端 dev server（`localhost:5173`）与后端（`localhost:8080`）跨域，目前靠 Vite proxy 绕过。Docker Compose 部署或换端口时会直接遇到 CORS 错误。
-- **实现位置：** `hify-common: com.hify.common.config.WebMvcConfig`
-- **要点：**
-  - 实现 `WebMvcConfigurer`
-  - CORS 映射：允许的 origin、method、header
-  - 注册 Jackson 消息转换器
-  - 静态资源规则
-- **优先级：** 🔴 最高 — 后端对外暴露的第一层配置
-
-### 5. JSON 工具类（`JsonUtil`）
+### 4. JSON 工具类（`JsonUtil`）
 
 - **解决什么问题：** Workflow JSON 配置解析、Agent prompt 模板处理、工具调用参数序列化等多处需要 JSON 操作，各模块各自 `new ObjectMapper()` 会导致配置不一致。
 - **实现位置：** `hify-common: com.hify.common.util.JsonUtil`
@@ -67,7 +56,7 @@
   - 内部复用 Spring 容器的 `ObjectMapper`（确保全局配置一致）
 - **优先级：** 🟡 高 — 几乎所有模块都需要的工具
 
-### 6. SSE 推送工具（`SseUtil`）
+### 5. SSE 推送工具（`SseUtil`）
 
 - **解决什么问题：** 对话引擎和 Agent 运行时都需要通过 SSE 流式推送（逐 token 输出、工具调用中间状态、错误通知），`ServerSentEvent.Builder` 拼接逻辑会在多处重复。
 - **实现位置：** `hify-common: com.hify.common.util.SseUtil`
@@ -77,7 +66,7 @@
   - chat 和 agent 模块直接复用
 - **优先级：** 🟡 高 — chat/agent 模块核心依赖
 
-### 7. 系统常量（`Constants`）
+### 6. 系统常量（`Constants`）
 
 - **解决什么问题：** 魔术字符串散布各处：缓存 key 前缀、默认分页大小、最大 Token 限制、系统默认时区等，后期修改时要全局搜索替换。
 - **实现位置：** `hify-common: com.hify.common.constant.Constants`
@@ -93,7 +82,7 @@
 
 ## 三、外部调用（LLM）
 
-### 8. LLM 线程池配置（`LlmThreadPoolConfig`）
+### 7. LLM 线程池配置（`LlmThreadPoolConfig`）
 
 - **解决什么问题：** LLM 调用是长阻塞 IO（30-120 秒/次），如果共用 Tomcat worker 线程，几条并发 SSE 连接就能耗尽线程池，导致健康检查和其他 API 不可用。
 - **实现位置：** `hify-model: com.hify.model.config.LlmThreadPoolConfig`
@@ -103,7 +92,7 @@
   - 线程名前缀 `llm-` 便于监控识别
 - **优先级：** 🔴 最高 — 防止 LLM 慢调用拖垮整个应用
 
-### 9. 模型客户端配置（`HttpClientConfig`）
+### 8. 模型客户端配置（`HttpClientConfig`）
 
 - **解决什么问题：** 不同模型（OpenAI 300ms vs Ollama 本地 10ms）延迟差异巨大，统一超时无法合理适配。
 - **实现位置：** `hify-model: com.hify.model.config.HttpClientConfig`
@@ -114,7 +103,7 @@
   - 适配 OpenAI / Ollama / vLLM / DeepSeek 等 OpenAI-compatible 接口
 - **优先级：** 🔴 最高 — LLM 调用的基础设施
 
-### 10. LLM 调用门面 + Resilience4j 熔断降级
+### 9. LLM 调用门面 + Resilience4j 熔断降级
 
 - **解决什么问题：** LLM 服务不稳定、限流频繁，不做保护会导致调用方堆积、资源耗尽。需按 Provider 维度做差异化保护。
 - **实现位置：** `hify-model: com.hify.model.llm.LlmInvoker` + `resilience4j.yml`
@@ -133,7 +122,7 @@
 
 ## 四、缓存
 
-### 11. 缓存 Key 约定（`CacheConstants`）
+### 10. 缓存 Key 约定（`CacheConstants`）
 
 - **解决什么问题：** `RedisConfig` 和 `RedisUtil` 已封装，但业务代码直接裸写 key 字符串会导致大量分散的魔术值，后期改命名规则代价极高。
 - **实现位置：** `hify-common: com.hify.common.constant.CacheConstants`
@@ -145,7 +134,7 @@
   - `MODEL_LIST_PREFIX = "hify:model:"`
 - **优先级：** 🟢 中 — 写业务缓存逻辑前定义即可
 
-### 12. 会话热数据缓存策略
+### 11. 会话热数据缓存策略
 
 - **解决什么问题：** data-model 指出会话热数据放 Redis、全量历史存 MySQL，这个策略直接决定 chat 模块的代码结构，需提前设计边界。
 - **设计决策（不立即写代码）：**
@@ -160,7 +149,7 @@
 
 ## 五、可观测性
 
-### 13. 调用日志基础组件（`LogRecord` + `LogService` + `LogMapper`）
+### 12. 调用日志基础组件（`LogRecord` + `LogService` + `LogMapper`）
 
 - **解决什么问题：** data-model 将 `log` 表划在 hify-common，意味着所有模块的调用日志都通过 common 统一记录。目前实体、Service、Mapper 全缺，chat/agent 模块连日志写在哪里都不知道。
 - **实现位置：** `hify-common: com.hify.common.log.LogRecord`, `LogService`, `LogMapper`
@@ -170,7 +159,7 @@
   - `LogMapper` 批量插入优化 + 游标分页查询
 - **优先级：** 🟡 高 — 所有模块的日志出口
 
-### 14. Actuator 健康检查扩展
+### 13. Actuator 健康检查扩展
 
 - **解决什么问题：** Actuator 已暴露 health/info/metrics/env，但 health 端点只检查应用进程是否存活。MySQL/Redis/pgvector 挂了仍然返回 UP，部署时无法及时发现。
 - **实现位置：** `hify-app: com.hify.health.*`
@@ -180,7 +169,7 @@
   - dev profile 下跳过（不依赖外部服务）
 - **优先级：** 🟢 中 — 对开发调试和部署都很实用
 
-### 15. 请求链路追踪（`TraceFilter`）
+### 14. 请求链路追踪（`TraceFilter`）
 
 - **解决什么问题：** 一个对话请求经过 ChatController → AgentService → LlmInvoker → 外部 LLM → 工具调用，路径跨越 4-5 层，出问题时日志无法串联。
 - **实现位置：** `hify-common: com.hify.common.log.TraceFilter`
@@ -192,7 +181,7 @@
   - `LogRecord.traceId` 关联调用日志
 - **优先级：** 🟡 高 — 排障的基石，越早做越好
 
-### 16. Micrometer 业务指标埋点
+### 15. Micrometer 业务指标埋点
 
 - **解决什么问题：** Spring Boot Actuator 自带 JVM metrics，但业务指标（LLM 调用耗时 P50/P99、工具调用成功率、SSE 连接数）需要自定义埋点，后期接入 Prometheus + Grafana 时需要这些数据。
 - **实现位置：** `hify-model`、`hify-chat` 中注入 `MeterRegistry`
@@ -212,32 +201,31 @@
 |---|---|---|
 | 🔴 最高 | 1. DDL 建表脚本 | hify-app |
 | 🔴 最高 | 2. JacksonConfig | hify-common |
-| 🔴 最高 | 4. WebMvcConfig | hify-common |
-| 🔴 最高 | 8. LlmThreadPoolConfig | hify-model |
-| 🔴 最高 | 9. HttpClientConfig | hify-model |
+| 🔴 最高 | 7. LlmThreadPoolConfig | hify-model |
+| 🔴 最高 | 8. HttpClientConfig | hify-model |
 | 🟡 高 | 3. PageUtils | hify-common |
-| 🟡 高 | 5. JsonUtil | hify-common |
-| 🟡 高 | 6. SseUtil | hify-common |
-| 🟡 高 | 7. Constants | hify-common |
-| 🟡 高 | 10. LlmInvoker + Resilience4j | hify-model |
-| 🟡 高 | 13. LogRecord + LogService + LogMapper | hify-common |
-| 🟡 高 | 15. TraceFilter | hify-common |
-| 🟢 中 | 11. CacheConstants | hify-common |
-| 🟢 中 | 12. 会话热数据缓存策略 | hify-chat |
-| 🟢 中 | 14. Actuator 健康检查扩展 | hify-app |
-| 🟢 中 | 16. Micrometer 业务指标 | 各业务模块 |
+| 🟡 高 | 4. JsonUtil | hify-common |
+| 🟡 高 | 5. SseUtil | hify-common |
+| 🟡 高 | 6. Constants | hify-common |
+| 🟡 高 | 9. LlmInvoker + Resilience4j | hify-model |
+| 🟡 高 | 12. LogRecord + LogService + LogMapper | hify-common |
+| 🟡 高 | 14. TraceFilter | hify-common |
+| 🟢 中 | 10. CacheConstants | hify-common |
+| 🟢 中 | 11. 会话热数据缓存策略 | hify-chat |
+| 🟢 中 | 13. Actuator 健康检查扩展 | hify-app |
+| 🟢 中 | 15. Micrometer 业务指标 | 各业务模块 |
 
 ## 实现依赖链
 
 ```
-DDL 建表 ──→ JacksonConfig ──→ WebMvcConfig
-    │               │
-    └──→ JsonUtil ──┤
-                    │
+DDL 建表 ──→ JacksonConfig
+    │
+    └──→ JsonUtil
+    │
     LogRecord ──→ TraceFilter ──→ 日志可追踪
-                    │
+    │
     Constants ──→ CacheConstants ──→ RedisUtil 可规范使用
-                    │
+    │
     LlmThreadPoolConfig ──→ HttpClientConfig ──→ LlmInvoker ──→ 模型模块可跑
 ```
 
