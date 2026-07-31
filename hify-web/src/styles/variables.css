@@ -1,0 +1,9 @@
+:root {
+  /* Element Plus 主题变量覆盖 */
+  --el-color-primary: #409eff;
+  --el-border-radius-base: 6px;
+
+  /* 布局 */
+  --sidebar-width: 220px;
+  --header-height: 56px;
+}

@@ -1,0 +1,100 @@
+# ============================================================
+# Hify — 线上部署
+#
+# 启动：docker compose up -d
+# 停止：docker compose down
+# 数据持久化在 Docker volume 中，不丢
+#
+# 国内加速（取消 backend/frontend build.args 注释）：
+#   docker compose build --build-arg DOCKER_MIRROR=docker.1ms.run/
+# ============================================================
+
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-hify123}
+      MYSQL_DATABASE: hify
+      MYSQL_USER: hify
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-hify123}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgvector:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: hify
+      POSTGRES_PASSWORD: ${PGPASSWORD:-hify123}
+      POSTGRES_DB: hify
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hify"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+      # args:
+      #   DOCKER_MIRROR: docker.1ms.run/
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/hify?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=hify
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD:-hify123}
+      - SPRING_AI_VECTORSTORE_PGVECTOR_HOST=pgvector
+      - SPRING_AI_VECTORSTORE_PGVECTOR_USERNAME=hify
+      - SPRING_AI_VECTORSTORE_PGVECTOR_PASSWORD=${PGPASSWORD:-hify123}
+      - SPRING_DATA_REDIS_HOST=redis
+    depends_on:
+      mysql:
+        condition: service_healthy
+      pgvector:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.frontend
+      # args:
+      #   DOCKER_MIRROR: docker.1ms.run/
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  pgvector_data:
+  redis_data:

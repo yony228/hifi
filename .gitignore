@@ -33,7 +33,7 @@ logs/
 node_modules/
 dist/
 *.local
-hifi-web/.vite/
+hify-web/.vite/
 
 # ======================== Docker ========================
 deploy/data/

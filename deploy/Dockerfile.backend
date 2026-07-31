@@ -1,0 +1,56 @@
+# ============================================================
+# Hify Backend — 多阶段构建
+# 阶段 1：Maven 编译
+# 阶段 2：JRE 运行
+#
+# 国内加速构建：
+#   docker compose build --build-arg DOCKER_MIRROR=docker.1ms.run/
+# 或在 compose 文件中取消注释 ARG 行替换默认值
+# ============================================================
+ARG DOCKER_MIRROR=
+
+# --- 阶段 1：编译 ---
+FROM ${DOCKER_MIRROR}maven:3.9-eclipse-temurin-21-alpine AS builder
+
+WORKDIR /build
+
+# 1. 复制 POM 文件，下载依赖（利用 Docker 层缓存）
+COPY pom.xml ./
+COPY hify-common/pom.xml ./hify-common/
+COPY hify-model/pom.xml   ./hify-model/
+COPY hify-tool/pom.xml    ./hify-tool/
+COPY hify-knowledge/pom.xml ./hify-knowledge/
+COPY hify-agent/pom.xml   ./hify-agent/
+COPY hify-workflow/pom.xml ./hify-workflow/
+COPY hify-chat/pom.xml    ./hify-chat/
+COPY hify-app/pom.xml     ./hify-app/
+
+RUN mvn dependency:go-offline -pl hify-app -am -q
+
+# 2. 复制源码并编译
+COPY hify-common/src ./hify-common/src
+COPY hify-model/src   ./hify-model/src
+COPY hify-tool/src    ./hify-tool/src
+COPY hify-knowledge/src ./hify-knowledge/src
+COPY hify-agent/src   ./hify-agent/src
+COPY hify-workflow/src ./hify-workflow/src
+COPY hify-chat/src    ./hify-chat/src
+COPY hify-app/src     ./hify-app/src
+
+RUN mvn package -pl hify-app -am -DskipTests -q
+
+# 找到最终 jar 并重命名
+RUN mv hify-app/target/hify-app-*.jar app.jar
+
+# --- 阶段 2：运行 ---
+FROM ${DOCKER_MIRROR}eclipse-temurin:21-jre-alpine
+
+RUN addgroup -S hify && adduser -S hify -G hify
+
+COPY --from=builder /build/app.jar /app/app.jar
+
+EXPOSE 8080
+
+USER hify
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

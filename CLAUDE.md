@@ -84,13 +84,13 @@ Vue 3 SPA 统一入口，侧边栏导航，包含以下页面：
 
 | 文件 | 用途 | 何时阅读 |
 |---|---|---|
-| `specs/design.md` | 工程架构设计：模块划分、依赖方向、ADR 架构决策及其原因 | 新建模块、调整模块依赖、做架构决策时 |
-| `specs/code-organization.md` | 代码组织规范：每层职责边界、跨模块调用规则、命名规范、自检清单 | 写任何 Java 代码前。面向 AI 执行，规则精确到编号 |
-| `specs/llm-invoke-spec.md` | LLM 调用技术方案：线程隔离、超时配置、熔断降级、重试策略 | 编写或修改 hify-model 模块的 LLM 调用逻辑时 |
-| `specs/deploy-architecture.md` | 部署架构：K8s 组件拓扑、请求流转、资源配置、运维策略 | 编写 Dockerfile、K8s YAML、或调整部署拓扑时 |
-| `specs/scaling-roadmap.md` | 扩展路径：50→5000 人分 4 阶段演进，每阶段触发条件、改什么、不改什么 | 做性能优化、架构升级决策时 |
-| `specs/data-model.md` | 数据模型设计：领域模型、表结构、数据域与 Maven 模块映射、公共字段约定、性能规范 | 新增表/字段、调整模块数据边界、索引设计、分页查询时 |
-| `specs/api-spec.md` | API 接口规范：路径约定、统一响应格式、游标分页、空值处理、错误码 | 写 Controller、定义 DTO、处理异常、对接前后端接口时 |
+| `docs/specs/design.md` | 工程架构设计：模块划分、依赖方向、ADR 架构决策及其原因 | 新建模块、调整模块依赖、做架构决策时 |
+| `docs/specs/code-organization.md` | 代码组织规范：每层职责边界、跨模块调用规则、命名规范、自检清单 | 写任何 Java 代码前。面向 AI 执行，规则精确到编号 |
+| `docs/specs/llm-invoke-spec.md` | LLM 调用技术方案：线程隔离、超时配置、熔断降级、重试策略 | 编写或修改 hify-model 模块的 LLM 调用逻辑时 |
+| `docs/specs/deploy-architecture.md` | 部署架构：K8s 组件拓扑、请求流转、资源配置、运维策略 | 编写 Dockerfile、K8s YAML、或调整部署拓扑时 |
+| `docs/specs/scaling-roadmap.md` | 扩展路径：50→5000 人分 4 阶段演进，每阶段触发条件、改什么、不改什么 | 做性能优化、架构升级决策时 |
+| `docs/specs/data-model.md` | 数据模型设计：领域模型、表结构、数据域与 Maven 模块映射、公共字段约定、性能规范 | 新增表/字段、调整模块数据边界、索引设计、分页查询时 |
+| `docs/specs/api-spec.md` | API 接口规范：路径约定、统一响应格式、游标分页、空值处理、错误码 | 写 Controller、定义 DTO、处理异常、对接前后端接口时 |
 
 ## 部署与运维
 
@@ -112,7 +112,7 @@ Docker Compose → app(:8080) + mysql(:3306) + pgvector(:5432) + redis(:6379) + 
 
 ## 数据模型
 
-> 完整表结构、领域划分、公共字段约定、性能规范见 **[`specs/data-model.md`](specs/data-model.md)**。下面是模块与表的归属速查。
+> 完整表结构、领域划分、公共字段约定、性能规范见 **[`docs/specs/data-model.md`](docs/specs/data-model.md)**。下面是模块与表的归属速查。
 
 | Maven 模块 | 表 |
 |---|---|

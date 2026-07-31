@@ -1,0 +1,32 @@
+# ============================================================
+# Hify Dev — 本地验证专用
+#
+# 启动：docker compose -f docker-compose.dev.yml up -d
+# 浏览器：http://localhost
+#
+# 国内加速（取消下面两行 build: 的 args 注释）：
+#   docker compose -f docker-compose.dev.yml build --build-arg DOCKER_MIRROR=docker.1ms.run/
+# ============================================================
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+      # args:
+      #   DOCKER_MIRROR: docker.1ms.run/
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.frontend
+      # args:
+      #   DOCKER_MIRROR: docker.1ms.run/
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

@@ -1,5 +1,6 @@
 package com.hify.common.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hify.common.exception.ErrorCode;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -29,13 +30,25 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Result<T> {
 
-    /** 业务状态码：0 = 成功，非 0 = 失败 */
+    /**
+     * 业务状态码：0 = 成功，非 0 = 失败。
+     * <p>通过 {@code ALWAYS} 覆盖全局 NON_NULL，确保即使为零值也出现在 JSON 中。</p>
+     */
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private int code;
 
-    /** 人类可读的简短描述 */
+    /**
+     * 人类可读的简短描述。
+     * <p>通过 {@code ALWAYS} 覆盖全局 NON_NULL，确保始终出现在 JSON 中。</p>
+     */
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private String message;
 
-    /** 响应数据，成功时有值，失败时为 null */
+    /**
+     * 响应数据，成功时有值，失败时为 null。
+     * <p>通过 {@code ALWAYS} 覆盖全局 NON_NULL，确保失败时 {@code "data": null} 仍出现在 JSON 中。</p>
+     */
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private T data;
 
     // ======================== 成功工厂 ========================
