@@ -94,6 +94,7 @@
   - 所有 LLM 调用通过 `@Async("llmExecutor")` 隔离执行
   - 线程名前缀 `llm-` 便于监控识别
 - **优先级：** 🔴 最高 — 防止 LLM 慢调用拖垮整个应用
+- **已完成：** ✅
 
 ### 8. 模型客户端配置（`HttpClientConfig`）
 
@@ -105,6 +106,7 @@
   - 缓存 `ChatClient` 实例避免频繁重建
   - 适配 OpenAI / Ollama / vLLM / DeepSeek 等 OpenAI-compatible 接口
 - **优先级：** 🔴 最高 — LLM 调用的基础设施
+- **已完成：** ✅
 
 ### 9. LLM 调用门面 + Resilience4j 熔断降级
 
