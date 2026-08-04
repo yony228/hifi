@@ -2,6 +2,7 @@ package com.hify;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
  * Hify 启动入口。
@@ -18,6 +19,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * }</pre>
  */
 @SpringBootApplication
+@EnableAsync
 public class HifyApplication {
 
     public static void main(String[] args) {
