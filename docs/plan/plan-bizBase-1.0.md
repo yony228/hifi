@@ -81,6 +81,7 @@
   - `TOKEN_LIMITS` — Token 相关限制
   - `DATE_FORMAT` / `TIMEZONE` — 格式化常量
 - **优先级：** 🟡 高 — 所有模块引用
+- **已完成：** ✅
 
 ---
 
