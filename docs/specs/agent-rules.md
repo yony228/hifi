@@ -83,9 +83,10 @@ Agent: "当前这段代码可能的优化方向：A/B/C。你倾向哪一种？�
 每一次 `git commit` 之前，Agent 必须确保：
 
 1. `mvn test` 全项目通过（含新测试 + 旧测试无回归）
-2. `git diff --stat` 已向用户展示变更范围
-3. Commit message 遵循 `{type}: {描述}` 格式（见 [CI/CD 规范 §2](./cicd.md#二commit-规范)）
-4. 无意外文件混入（`.DS_Store`、临时文件等）
+2. **CR Agent 已运行**（[CI/CD 规范 §三](./cicd.md#三code-review-agentcr-agent)），findings 已展示并处理
+3. `git diff --stat` 已向用户展示变更范围
+4. Commit message 遵循 `{type}: {描述}` 格式（见 [CI/CD 规范 §二](./cicd.md#二commit-规范)）
+5. 无意外文件混入（`.DS_Store`、临时文件等）
 
 ### 3.3 默认不自动提交
 
