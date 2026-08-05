@@ -91,6 +91,8 @@ Vue 3 SPA 统一入口，侧边栏导航，包含以下页面：
 | `docs/specs/scaling-roadmap.md` | 扩展路径：50→5000 人分 4 阶段演进，每阶段触发条件、改什么、不改什么 | 做性能优化、架构升级决策时 |
 | `docs/specs/data-model.md` | 数据模型设计：领域模型、表结构、数据域与 Maven 模块映射、公共字段约定、性能规范 | 新增表/字段、调整模块数据边界、索引设计、分页查询时 |
 | `docs/specs/api-spec.md` | API 接口规范：路径约定、统一响应格式、游标分页、空值处理、错误码 | 写 Controller、定义 DTO、处理异常、对接前后端接口时 |
+| `docs/specs/cicd.md` | CI/CD 规范：分支管理、Commit 格式、CI 流水线、Tag 与部署流程 | 提交代码、打 Tag、部署、CI 配置时 |
+| `docs/specs/agent-rules.md` | Agent 协作守则：讨论/实现模式边界、提交权限、代码规范遵循、Plan 驱动 | **每次会话开始前。定义 Agent 什么能做什么不能做** |
 
 ## 部署与运维
 
