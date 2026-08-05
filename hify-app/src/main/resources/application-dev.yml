@@ -46,3 +46,23 @@ logging:
     com.hify: DEBUG
     org.springframework.ai: DEBUG
     org.springframework.boot.autoconfigure: INFO
+    # Resilience4j: dev 环境无 LLM 调用，熔断/重试/舱壁实例闲置不触发，设 WARN 减少噪音
+    io.github.resilience4j: WARN
+
+# ============================================================
+# Resilience4j — dev 环境说明
+# ============================================================
+# application.yml 中定义的熔断器/重试/舱壁/超时配置会原样继承到 dev，
+# 但 dev 环境无外部 LLM 服务（OpenAiAutoConfiguration 已排除），
+# 所有 resilience 实例仅创建不触发——不影响启动和健康检查。
+#
+# 各实例状态：
+#   CircuitBreaker: CLOSED（默认，无调用故无失败统计）
+#   Bulkhead:      空闲（无并发调用）
+#   Retry:         无重试事件
+#   TimeLimiter:   无超时事件
+#
+# 如需在 dev 中实际测试 LLM 调用 + 容错行为：
+#   1. 注释掉上方 autoconfigure.exclude 中的 OpenAiAutoConfiguration
+#   2. 在环境变量或 .env 中配置真实的 OPENAI_API_KEY
+#   3. 恢复 io.github.resilience4j 日志级别为 DEBUG 观察熔断/重试
