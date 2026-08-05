@@ -57,3 +57,114 @@ logging:
   level:
     com.hify: DEBUG
     org.springframework.ai: INFO
+
+# ============================================================
+# Resilience4j — LLM 调用容错保护
+# 对应规范 docs/specs/design/llm-invoke-spec.md §7
+# ============================================================
+resilience4j:
+  # --- 重试 ---
+  retry:
+    instances:
+      llm-retry:
+        max-attempts: 3                       # 1 次原始 + 2 次重试
+        wait-duration: 1s                     # 基础等待 1s
+        exponential-backoff-multiplier: 2     # 指数退避: 1s → 2s → 4s
+        max-wait-duration: 10s                # 单次重试等待上限
+        enable-randomized-wait: true          # 开启 jitter ±25%，避免惊群
+        randomized-wait-factor: 0.25
+        retry-exceptions:
+          - java.net.SocketTimeoutException
+          - java.net.ConnectException
+          - java.io.IOException
+          - org.springframework.web.client.HttpServerErrorException
+        ignore-exceptions:
+          - org.springframework.web.client.HttpClientErrorException  # 4xx（429 特殊处理）
+
+  # --- 熔断器（按 Provider 差异化） ---
+  circuitbreaker:
+    instances:
+      llm-openai:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 20              # OpenAI QPS 高，窗口大一些
+        failure-rate-threshold: 50           # 失败率 ≥ 50% 触发熔断
+        wait-duration-in-open-state: 30s     # 熔断后 30s 进入半开
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:
+          - java.net.SocketTimeoutException
+          - java.net.ConnectException
+          - java.io.IOException
+          - org.springframework.web.client.HttpServerErrorException
+      llm-ollama:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 5               # 本地部署，失败窗口小
+        failure-rate-threshold: 60           # 容忍度更高（本地可重启）
+        wait-duration-in-open-state: 15s
+        permitted-number-of-calls-in-half-open-state: 2
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:
+          - java.net.SocketTimeoutException
+          - java.net.ConnectException
+          - java.io.IOException
+      llm-vllm:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:
+          - java.net.SocketTimeoutException
+          - java.net.ConnectException
+          - java.io.IOException
+          - org.springframework.web.client.HttpServerErrorException
+      llm-deepseek:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:
+          - java.net.SocketTimeoutException
+          - java.net.ConnectException
+          - java.io.IOException
+          - org.springframework.web.client.HttpServerErrorException
+      llm-custom:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:
+          - java.net.SocketTimeoutException
+          - java.net.ConnectException
+          - java.io.IOException
+          - org.springframework.web.client.HttpServerErrorException
+
+  # --- 舱壁（按 Provider 限制并发） ---
+  bulkhead:
+    instances:
+      llm-openai:
+        max-concurrent-calls: 20             # OpenAI 并发配额大
+        max-wait-duration: 5s
+      llm-ollama:
+        max-concurrent-calls: 5              # 本地 GPU 显存限制
+        max-wait-duration: 10s
+      llm-vllm:
+        max-concurrent-calls: 10
+        max-wait-duration: 5s
+      llm-deepseek:
+        max-concurrent-calls: 15
+        max-wait-duration: 5s
+      llm-custom:
+        max-concurrent-calls: 10
+        max-wait-duration: 5s
+
+  # --- 超时 ---
+  timelimiter:
+    instances:
+      llm-timelimiter:
+        timeout-duration: 120s               # 非流式 120s 上限
