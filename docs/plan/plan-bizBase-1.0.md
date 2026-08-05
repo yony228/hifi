@@ -195,6 +195,7 @@
   - `traceId` 通过 SSE header 推给前端，方便用户反馈问题时定位
   - `LogRecord.traceId` 关联调用日志
 - **优先级：** 🟡 高 — 排障的基石，越早做越好
+- **已完成：** ✅
 
 ### 15. Micrometer 业务指标埋点
 

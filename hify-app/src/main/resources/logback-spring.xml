@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!--
+        Hify 日志配置 — 配合 TraceFilter 的 MDC traceId
+        日志格式: [traceId] 级别 线程 类: 消息
+        示例: [a3f2b1c0] INFO http-nio-8080-exec-1 c.h.c.HelloController: 收到请求
+    -->
+
+    <!-- 控制台输出 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%X{traceId}] %d{HH:mm:ss.SSS} %-5level %thread %logger{36}: %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 项目日志级别（从 application.yml 继承，此处仅定义格式） -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+</configuration>
