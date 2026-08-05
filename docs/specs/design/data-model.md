@@ -266,14 +266,19 @@ workflow_node ──N:1──→ workflow   节点归属工作流
 | `agent_id` | BIGINT | FK → agent.id |
 | `session_id` | BIGINT | FK → session.id |
 | `model_id` | BIGINT | FK → model.id |
-| `user_input` | TEXT | 用户输入 |
-| `model_output` | TEXT | 最终输出 |
-| `tool_calls` | JSON | 工具调用链 |
+| `user_input` | VARCHAR(500) | 用户输入摘要（前 500 字符） |
+| `output_summary` | VARCHAR(500) | 输出摘要（前 500 字符），完整回复见 message 表 |
+| `tool_calls_summary` | VARCHAR(500) | 工具名称列表 JSON，如 `["search","code_exec"]`，完整参数见 message 表 |
 | `token_usage` | INT | 总 token 消耗 |
 | `duration_ms` | INT | 耗时（毫秒） |
 | `status` | TINYINT | 0-失败 1-成功 |
-| `error_msg` | TEXT | 错误信息 |
+| `error_msg` | VARCHAR(1000) | 错误信息 |
+| `trace_id` | VARCHAR(32) | 关联 TraceFilter 的 traceId |
 | `created_at` | DATETIME | |
+
+> **设计决策（2026-08-05）：log 表定位为「轻量审计索引」而非「全量副本」。**
+> 完整输入/输出/工具参数通过 `session_id` → message 表回溯，log 表只存摘要。
+> 单行从 ~2KB 降到 ~500B，年增长 7 万行约 35MB。
 
 ---
 

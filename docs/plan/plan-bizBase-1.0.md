@@ -163,10 +163,16 @@
 - **解决什么问题：** data-model 将 `log` 表划在 hify-common，意味着所有模块的调用日志都通过 common 统一记录。目前实体、Service、Mapper 全缺，chat/agent 模块连日志写在哪里都不知道。
 - **实现位置：** `hify-common: com.hify.common.log.LogRecord`, `LogService`, `LogMapper`
 - **要点：**
-  - `LogRecord` 实体：调用时间、Agent ID、用户 ID、session ID、输入摘要、输出摘要、工具链（JSON）、Token 总消耗、耗时(ms)、状态、traceId
+  - `LogRecord` 实体（轻量审计索引，非全量副本）：
+    - 必存：user_id / agent_id / session_id / model_id / trace_id / created_at
+    - 摘要：user_input（前 500 字符）、output_summary（前 500 字符）、tool_calls_summary（工具名列表 JSON）
+    - 指标：token_usage / duration_ms / status / error_msg
+    - 完整输入/输出/工具参数通过 session_id → message 表回溯，log 表不存全文
   - `LogService.record(LogRecord)` 异步写入接口（`@Async`），由各业务模块注入使用
-  - `LogMapper` 批量插入优化 + 游标分页查询
+  - `LogMapper` 批量插入优化 + 时间范围筛选查询
+  - 单行 ~500B，年增长 7 万行约 35MB，MySQL 单表完全胜任
 - **优先级：** 🟡 高 — 所有模块的日志出口
+- **已完成：** ✅
 
 ### 13. Actuator 健康检查扩展
 
