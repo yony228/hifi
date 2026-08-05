@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * LLM 模型 HTTP 客户端配置。
  *
- * <p>对应规范 {@code docs/specs/llm-invoke-spec.md §3 超时控制}：</p>
+ * <p>对应规范 {@code docs/specs/design/llm-invoke-spec.md §3 超时控制}：</p>
  * <ul>
  *   <li>为每个 Provider 类型预设差异化的连接/读取超时</li>
  *   <li>通过 {@link #buildRestClientBuilder(ProviderTypeEnum)} 创建带超时的 {@link RestClient.Builder}</li>

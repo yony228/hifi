@@ -6,7 +6,7 @@ import java.time.Duration;
  * 模型提供商类型枚举，映射 {@code model_provider.provider_type} 字段。
  *
  * <p>每种类型预设了连接超时、读取超时（非流式）、读取超时（流式）三个参数，
- * 对应 {@code docs/specs/llm-invoke-spec.md §3.3 超时配置速查表}。</p>
+ * 对应 {@code docs/specs/design/llm-invoke-spec.md §3.3 超时配置速查表}。</p>
  *
  * <table>
  *   <tr><th>类型</th><th>连接超时</th><th>读取（非流式）</th><th>读取（流式）</th><th>原因</th></tr>

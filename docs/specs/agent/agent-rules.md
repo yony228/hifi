@@ -107,12 +107,12 @@ Agent: (默默 git commit)                                ← 错误
 
 | 场景 | 必读文件 |
 |---|---|
-| 新建模块、调整模块依赖 | `docs/specs/design.md` |
-| 写 Java 代码 | `docs/specs/code-organization.md` |
-| 写 LLM 调用逻辑 | `docs/specs/llm-invoke-spec.md` |
-| 新增表/字段 | `docs/specs/data-model.md` |
-| 写 Controller / DTO | `docs/specs/api-spec.md` |
-| CI/CD 相关问题 | `docs/specs/cicd.md` |
+| 新建模块、调整模块依赖 | `docs/specs/design/design.md` |
+| 写 Java 代码 | `docs/specs/agent/code-organization.md` |
+| 写 LLM 调用逻辑 | `docs/specs/design/llm-invoke-spec.md` |
+| 新增表/字段 | `docs/specs/design/data-model.md` |
+| 写 Controller / DTO | `docs/specs/design/api-spec.md` |
+| CI/CD 相关问题 | `docs/specs/agent/cicd.md` |
 | 不确定 Agent 行为边界 | 本文档 |
 
 ### 4.2 代码风格

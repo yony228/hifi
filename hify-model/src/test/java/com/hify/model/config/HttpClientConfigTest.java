@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * 验证 {@link HttpClientConfig} 的 RestClient 构建与 ChatClient 缓存行为，
- * 按 {@code docs/specs/llm-invoke-spec.md §3 超时控制} 规则运行。
+ * 按 {@code docs/specs/design/llm-invoke-spec.md §3 超时控制} 规则运行。
  * <p>
  * 直接实例化 HttpClientConfig 进行测试，不依赖 Spring 容器。
  */

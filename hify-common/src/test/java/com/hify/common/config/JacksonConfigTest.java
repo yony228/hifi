@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * 验证 Jackson 全局配置与 {@link JacksonConfig} 一致，
- * 按 {@code docs/specs/api-spec.md §4 空值处理} 规则运行。
+ * 按 {@code docs/specs/design/api-spec.md §4 空值处理} 规则运行。
  * <p>
  * 由于 hify-common 是库模块无法使用 {@code @JsonTest}（缺少 {@code @SpringBootConfiguration}），
  * 这里手工复制 JacksonConfig 的装配逻辑构造 ObjectMapper 进行测试。

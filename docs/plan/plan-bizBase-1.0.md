@@ -8,7 +8,7 @@
 
 ### 1. DDL 建表脚本
 
-- **解决什么问题：** docs/specs/data-model.md 定义了 12 张表，但项目中零条 SQL，启动后数据库是空的，任何业务开发都无从做起。
+- **解决什么问题：** docs/specs/design/data-model.md 定义了 12 张表，但项目中零条 SQL，启动后数据库是空的，任何业务开发都无从做起。
 - **实现位置：** `hify-app/src/main/resources/db/schema-mysql.sql` + `schema-h2.sql`（dev profile 用）
 - **要点：**
   - 覆盖全部 12 张表：`user`, `model_provider`, `model`, `knowledge`, `knowledge_document`, `knowledge_chunk`（pgvector）, `agent`, `tool`, `agent_tool`, `workflow`, `workflow_node`, `session`, `message`, `log`

@@ -11,7 +11,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 /**
  * LLM 调用专用线程池配置。
  *
- * <p>对应规范 {@code docs/specs/llm-invoke-spec.md §2 线程管理}：</p>
+ * <p>对应规范 {@code docs/specs/design/llm-invoke-spec.md §2 线程管理}：</p>
  * <ul>
  *   <li>所有 LLM 调用通过 {@code @Async("llmExecutor")} 提交到本线程池，与 Tomcat worker 线程隔离</li>
  *   <li>核心线程 10（日常并发度），最大线程 50（峰值），队列 200（缓冲 4s 突发流量）</li>

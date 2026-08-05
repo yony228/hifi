@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.within;
 
 /**
  * 验证 {@link LlmThreadPoolConfig} 的线程池参数与行为，
- * 按 {@code docs/specs/llm-invoke-spec.md §2 线程管理} 规则运行。
+ * 按 {@code docs/specs/design/llm-invoke-spec.md §2 线程管理} 规则运行。
  * <p>
  * 直接实例化 LlmThreadPoolConfig 获取 executor，不依赖 Spring 容器，
  * 确保测试在库模块中可运行（无需 {@code @SpringBootTest}）。

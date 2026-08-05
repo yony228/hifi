@@ -19,7 +19,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * Jackson 全局序列化配置。
  *
- * <p>对应规范 {@code docs/specs/api-spec.md §4 空值处理}：</p>
+ * <p>对应规范 {@code docs/specs/design/api-spec.md §4 空值处理}：</p>
  * <ul>
  *   <li>全局 {@link JsonInclude.Include#NON_NULL} — null 字段不出现在 JSON 中</li>
  *   <li>顶层的 {@code code/message/data} 通过 {@code @JsonInclude(ALWAYS)} 覆盖全局规则，永不省略</li>
