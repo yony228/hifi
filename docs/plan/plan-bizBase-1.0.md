@@ -141,6 +141,7 @@
   - `SSE_STATE_PREFIX = "hify:sse-state:"`
   - `MODEL_LIST_PREFIX = "hify:model:"`
 - **优先级：** 🟢 中 — 写业务缓存逻辑前定义即可
+- **已完成：** ✅
 
 ### 11. 会话热数据缓存策略
 
