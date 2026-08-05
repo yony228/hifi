@@ -85,7 +85,7 @@ Vue 3 SPA 统一入口，侧边栏导航，包含以下页面：
 | 文件 | 用途 | 何时阅读 |
 |---|---|---|
 | `docs/specs/design/design.md` | 工程架构设计：模块划分、依赖方向、ADR 架构决策及其原因 | 新建模块、调整模块依赖、做架构决策时 |
-| `docs/specs/agent/code-organization.md` | 代码组织规范：每层职责边界、跨模块调用规则、命名规范、自检清单 | 写任何 Java 代码前。面向 AI 执行，规则精确到编号 |
+| `docs/specs/design/code-organization.md` | 代码组织规范：每层职责边界、跨模块调用规则、命名规范、自检清单 | 写任何 Java 代码前。面向 AI 执行，规则精确到编号 |
 | `docs/specs/design/llm-invoke-spec.md` | LLM 调用技术方案：线程隔离、超时配置、熔断降级、重试策略 | 编写或修改 hify-model 模块的 LLM 调用逻辑时 |
 | `docs/specs/ops/deploy-architecture.md` | 部署架构：K8s 组件拓扑、请求流转、资源配置、运维策略 | 编写 Dockerfile、K8s YAML、或调整部署拓扑时 |
 | `docs/specs/ops/scaling-roadmap.md` | 扩展路径：50→5000 人分 4 阶段演进，每阶段触发条件、改什么、不改什么 | 做性能优化、架构升级决策时 |

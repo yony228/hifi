@@ -108,7 +108,7 @@ Agent: (默默 git commit)                                ← 错误
 | 场景 | 必读文件 |
 |---|---|
 | 新建模块、调整模块依赖 | `docs/specs/design/design.md` |
-| 写 Java 代码 | `docs/specs/agent/code-organization.md` |
+| 写 Java 代码 | `docs/specs/design/code-organization.md` |
 | 写 LLM 调用逻辑 | `docs/specs/design/llm-invoke-spec.md` |
 | 新增表/字段 | `docs/specs/design/data-model.md` |
 | 写 Controller / DTO | `docs/specs/design/api-spec.md` |
