@@ -35,11 +35,6 @@ hify:
   redis:
     enabled: false
 
-# --- MyBatis-Plus（dev 环境打印 SQL） ---
-mybatis-plus:
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-
 # --- 日志 ---
 logging:
   level:

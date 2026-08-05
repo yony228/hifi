@@ -1,8 +1,7 @@
 package com.hify.model.config;
 
 import com.hify.model.entity.ProviderTypeEnum;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
@@ -46,10 +45,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @see com.hify.model.config.LlmThreadPoolConfig
  */
+@Slf4j
 @Configuration
 public class HttpClientConfig {
-
-    private static final Logger log = LoggerFactory.getLogger(HttpClientConfig.class);
 
     /** ChatModel 缓存，key 为 {@link ModelConfig#cacheKey()}。 */
     private final Map<String, OpenAiChatModel> chatClientCache = new ConcurrentHashMap<>();

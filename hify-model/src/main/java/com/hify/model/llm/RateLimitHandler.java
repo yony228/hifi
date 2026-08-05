@@ -1,7 +1,6 @@
 package com.hify.model.llm;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -23,10 +22,9 @@ import java.util.regex.Pattern;
  *   <li>上限 120 秒防止等待过久</li>
  * </ul>
  */
+@Slf4j
 @Component
 public class RateLimitHandler {
-
-    private static final Logger log = LoggerFactory.getLogger(RateLimitHandler.class);
 
     /** 纯数字格式：单位的秒数。 */
     private static final Pattern DELTA_SECONDS = Pattern.compile("^\\d+$");
